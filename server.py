@@ -49,7 +49,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             self.code = self.check_path(file_dir + self.msg[1])
             self.request.sendall(self.code)
         else:
-            self.request.sendall(bytearray(CODE405 + "Date:" + datetime.datetime.utcnow().strftime(GMT_FORMAT),'utf-8'))
+            self.request.sendall(bytearray(CODE405 + "Date: " + datetime.datetime.utcnow().strftime(GMT_FORMAT),'utf-8'))
 
         
 
@@ -60,10 +60,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
         if not os.path.exists(path):
             #print("4041")
-            return bytearray(CODE404 + "Date:" + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n",'utf-8')
+            return bytearray(CODE404 + "Date: " + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n",'utf-8')
         if ".." in path_list:
             #print("4042")
-            return bytearray(CODE404 + "Date:" + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n",'utf-8')
+            return bytearray(CODE404 + "Date: " + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n",'utf-8')
         if os.path.isdir(path) and ".." not in get_path:
             if self.msg[1][-1] != "/" and "." not in get_path:
                 str = "HTTP/1.1 301 Moved Permanently\r\nLocation: " + self.msg[1] + "/\r\n" + "Date:" + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n"
@@ -73,7 +73,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             #print("2001")
             f = open(path + "index.html",'r')
             content = f.read()
-            str = "Content-Type: text/html\r\n" + "Date:" + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n\r\n" + content + "\r\n"
+            str = "Content-Type: text/html\r\n" + "Date: " + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n\r\n" + content + "\r\n"
             ret_code = bytearray("HTTP/1.1 200 OK\r\n" + str,'utf-8')
             f.close()
             return ret_code
@@ -82,7 +82,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             #print("2002")
             f = open(path,'r')
             content = f.read()
-            str = "Content-Type: text/" + content_type[1] + "\r\n" + "Date:" + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n\r\n" + content + "\r\n"
+            str = "Content-Type: text/" + content_type[1] + "\r\n" + "Date: " + datetime.datetime.utcnow().strftime(GMT_FORMAT) + "\r\n\r\n" + content + "\r\n"
             ret_code = bytearray("HTTP/1.1 200 OK\r\n" + str,'utf-8')
             f.close()
             return ret_code
