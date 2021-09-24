@@ -49,7 +49,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             self.code = self.check_path(file_dir + self.msg[1])
             self.request.sendall(self.code)
         else:
-            self.request.sendall(bytearray(CODE405 + datetime.datetime.utcnow().strftime(GMT_FORMAT),'utf-8'))
+            self.request.sendall(bytearray(CODE405 + "Date:" + datetime.datetime.utcnow().strftime(GMT_FORMAT),'utf-8'))
 
         
 
