@@ -1,5 +1,6 @@
 #  coding: utf-8 
 import socketserver
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -26,23 +27,67 @@ import socketserver
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
+file_dir = "./www"
+CODE200 = bytearray("HTTP/1.1 200 OK\r\n",'utf-8')
+CODE301 = bytearray("HTTP/1.1 301 Moved Permanently\r\n",'utf-8')
+CODE404 = bytearray("HTTP/1.1 404 NOT FOUND\r\n",'utf-8')
+CODE405 = bytearray("HTTP/1.1 405 Method Not Allowed\r\n",'utf-8')
+
 
 class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("\nOK\n",'utf-8'))
-        req_type = self.data[:3]      
-        if(req_type == bytearray("GET",'utf-8')):
-            msg = bytearray("GET method used\n",'utf-8')
-            self.request.sendall(msg)
-
-
-
+        self.msg = self.data.decode("utf-8").split()
+        self.code = CODE200
+        #print(self.msg)
+        method_type = self.msg[0]
+        if(method_type == 'GET'):
+            self.code = self.check_path(file_dir + self.msg[1])
+            self.request.sendall(self.code)
+        else:
+            self.request.sendall(CODE405)
 
         
 
+    def check_path(self,path):
+        content_type = self.msg[1].split('.')
+        path_list = self.msg[1].split('/')
+        get_path = path_list[-1]
+
+        if not os.path.exists(path):
+            #print("4041")
+            return CODE404
+        if ".." in path_list:
+            #print("4042")
+            return CODE404
+        if os.path.isdir(path) and ".." not in get_path:
+            if self.msg[1][-1] != "/" and "." not in get_path:
+                str = "HTTP/1.1 301 Moved Permanently\r\nLocation: " + self.msg[1] + "/"
+                #print("here")
+                ret_code = bytearray(str,'utf-8')
+                return ret_code
+            #print("2001")
+            f = open(path + "index.html",'r')
+            content = f.read()
+            str = "Content-Type: text/html\r\n\r\n" + content + "\r\n" 
+            ret_code = bytearray("HTTP/1.1 200 OK\r\n" + str,'utf-8')
+            f.close()
+            return ret_code
+
+        if content_type[1] == "css" or content_type[1] == "html" and os.path.isfile(path):
+            #print("2002")
+            f = open(path,'r')
+            content = f.read()
+            str = "Content-Type: text/" + content_type[1] + "\r\n\r\n" + content + "\r\n" 
+            ret_code = bytearray("HTTP/1.1 200 OK\r\n" + str,'utf-8')
+            f.close()
+            return ret_code
+
+
+        
+        
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
